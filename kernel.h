@@ -11,7 +11,7 @@
 #define     add         0x02
 #define     sub         0x03
 #define     mul         0x04
-#define     sub         0x05
+#define     div         0x05
 
 #define     jmp         0x06
 #define     je          0x07
@@ -31,12 +31,13 @@
 #define     word        0x11
 #define     dword       0x12
 #define     qword       0x13
+#define     dqword      0x14
 
-#define     syscall     0x14
-#define     call        0x15
-#define     ret         0x16
+#define     syscall     0x15
+#define     call        0x16
+#define     ret         0x17
 
-#define     mod         0x17
+#define     mod         0x18
 
 #define     halt        0xFF
 

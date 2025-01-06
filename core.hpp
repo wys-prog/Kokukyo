@@ -22,10 +22,11 @@ namespace kokuyo {
     uint16_t              read_word();
     uint32_t              read_dword();
     uint64_t              read_qword();
+    uint128_t             read_dqword();
 
     void                  init_table();
 
-    std::function<void()> ftable[26];
+    std::function<void()> ftable[27];
 
   public:
     void run() {
