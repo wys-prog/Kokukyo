@@ -33,6 +33,10 @@
 #define     qword       0x13
 
 #define     syscall     0x14
+#define     call        0x15
+#define     ret         0x16
+
+#define     mod         0x17
 
 #define     halt        0xFF
 
