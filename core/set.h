@@ -41,11 +41,6 @@
 
 #define     halt        0xFF
 
-#define     STACK_MIN   (1024)
-#define     STACK_MAX   (1024 * 16)
-
-#define     SEG_MAX     (8 * 1024 * 1024 * 1024)
-
 #define     INS_COUNT   27
 
 #endif // SET_H

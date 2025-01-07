@@ -2,13 +2,12 @@
 //            - Wys
 // This code is free, and open source.
 
-#pragma once
-
 #include <cstdint>
 #include <functional>
 
 #include "set.h"
 #include "except.hpp"
+#include "uint128_t.h"
 
 namespace kokuyo {
   class core {
@@ -28,8 +27,10 @@ namespace kokuyo {
     uint128_t             read_dqword();
 
     void                  init_table();
+    void                  init_undertable();
 
     std::function<void()> ftable[INS_COUNT];
+    std::function<void()> undertable[9*4];
 
   public:
     void run() {
