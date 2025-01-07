@@ -1,9 +1,15 @@
+// コクウキョウ - Kokūkyō
+//            - Wys
+// This code is free, and open source.
+
 #pragma once
 
 #include <string>
 #include <cstdint>
 #include <sstream>
 #include <stdexcept>
+
+#define __throw_rt(e)  throw std::runtime_error(e)
 
 namespace kokuyo {
   class exceptions {
@@ -14,7 +20,7 @@ namespace kokuyo {
       return ss.str();
     }
   public:
-    static std::string make_illegal_instruction(uint64_t ip, uint64_t instruction) {
+    static std::string illegal(uint64_t ip, uint64_t instruction) {
       return make("Illegal instruction", ip, instruction);
     }
   };

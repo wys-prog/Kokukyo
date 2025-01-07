@@ -1,6 +1,11 @@
+// コクウキョウ - Kokūkyō
+//            - Wys
+// This code is free, and open source.
+
 #include <functional>
 
 #include "core.hpp"
+#include "set.h"
 #include "except.hpp"
 #include "libs/uint128_t.h"
 
@@ -51,25 +56,54 @@ namespace kokuyo {
     ftable[nop] = [this]() { return; };
 
     ftable[mov] = [this]() {
-      uint8_t op = read_byte();
-
-      switch (op) {
-      case byte:
-        memory_segment[read_byte()] = read_byte();
-        break;
-      case word:
-        memory_segment[read_word()] = read_word();
-        break;
-      case dword:
-        memory_segment[read_dword()] = read_dword();
-        break;
-      case qword:
-        memory_segment[read_qword()] = read_qword();
-        break;
-      default:
-        
-        break;
+      switch (read_byte()) {
+        case byte:  memory_segment[read_byte()]  = read_byte();  break;
+        case word:  memory_segment[read_word()]  = read_word();  break;
+        case dword: memory_segment[read_dword()] = read_dword(); break;
+        case qword: memory_segment[read_qword()] = read_qword(); break;
+        default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
       }
     };
+
+    ftable[add] = [this]() {
+      switch (read_byte()) {
+        case byte:  memory_segment[read_byte()]  += read_byte();  break;
+        case word:  memory_segment[read_word()]  += read_word();  break;
+        case dword: memory_segment[read_dword()] += read_dword(); break;
+        case qword: memory_segment[read_qword()] += read_qword(); break;
+        default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
+      }
+    };
+    
+    ftable[sub] = [this]() {
+      switch (read_byte()) {
+        case byte:  memory_segment[read_byte()]  -= read_byte();  break;
+        case word:  memory_segment[read_word()]  -= read_word();  break;
+        case dword: memory_segment[read_dword()] -= read_dword(); break;
+        case qword: memory_segment[read_qword()] -= read_qword(); break;
+        default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
+      }
+    };
+
+    ftable[mul] = [this]() {
+      switch (read_byte()) {
+        case byte:  memory_segment[read_byte()]  *= read_byte();  break;
+        case word:  memory_segment[read_word()]  *= read_word();  break;
+        case dword: memory_segment[read_dword()] *= read_dword(); break;
+        case qword: memory_segment[read_qword()] *= read_qword(); break;
+        default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
+      }
+    };
+    
+    ftable[div] = [this]() {
+      switch (read_byte()) {
+        case byte:  memory_segment[read_byte()]  -= read_byte();  break;
+        case word:  memory_segment[read_word()]  -= read_word();  break;
+        case dword: memory_segment[read_dword()] -= read_dword(); break;
+        case qword: memory_segment[read_qword()] -= read_qword(); break;
+        default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
+      }
+    };
+
   }
 } // namespace kokuyo

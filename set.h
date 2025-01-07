@@ -2,8 +2,8 @@
 //            - Wys
 // This code is free, and open source.
 
-#ifndef KERNEL_H
-#define KERNEL_H
+#ifndef SET_H
+#define SET_H
 
 #define     nop         0x00
 
@@ -46,4 +46,6 @@
 
 #define     SEG_MAX     (8 * 1024 * 1024 * 1024)
 
-#endif // KERNEL_H
+#define     INS_COUNT   27
+
+#endif // SET_H

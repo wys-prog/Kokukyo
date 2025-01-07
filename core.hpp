@@ -4,9 +4,11 @@
 
 #pragma once
 
-#include "kernel.h"
 #include <cstdint>
 #include <functional>
+
+#include "set.h"
+#include "except.hpp"
 
 namespace kokuyo {
   class core {
@@ -17,6 +19,7 @@ namespace kokuyo {
     uint64_t              stack_max;
     uint64_t              ip;
     bool                  _halt = false;
+    uint8_t               flags;
 
     uint8_t               read_byte();
     uint16_t              read_word();
@@ -26,12 +29,18 @@ namespace kokuyo {
 
     void                  init_table();
 
-    std::function<void()> ftable[27];
+    std::function<void()> ftable[INS_COUNT];
 
   public:
     void run() {
       while (!_halt) {
+        uint8_t u = read_byte();
 
+        if (u < INS_COUNT) {
+          ftable[u](); // Call the function. 
+        } else {
+          exceptions::illegal(ip, u);
+        }
       }
 
       delete[] memory_segment;
