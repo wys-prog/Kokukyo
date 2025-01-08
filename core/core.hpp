@@ -14,10 +14,11 @@ namespace kokuyo {
   private:
     uint8_t              *memory_segment;
     uint64_t              segment_end;
-    uint64_t              stack_beg;
+    uint64_t             *stack_beg;
     uint64_t              stack_max;
+    uint64_t              stack_pointer;
     uint64_t              ip;
-    bool                  _halt = false;
+    bool                  _halt;
     uint8_t               flags;
 
     uint8_t               read_byte();
@@ -25,6 +26,9 @@ namespace kokuyo {
     uint32_t              read_dword();
     uint64_t              read_qword();
     uint128_t             read_dqword();
+
+    void                  _push(uint64_t bytes);
+    uint64_t              _pop();
 
     void                  init_table();
     void                  init_undertable();
@@ -45,8 +49,13 @@ namespace kokuyo {
       }
     }
 
-    core(uint8_t *mm_ptr, uint64_t s_end, uint64_t st_beg, uint64_t st_max) 
+    core(uint8_t *mm_ptr, uint64_t s_end, uint64_t *st_beg, uint64_t st_max) 
       : memory_segment(mm_ptr), segment_end(s_end), stack_beg(st_beg), stack_max(st_max)
-      {}
+      {
+        stack_pointer = 0x0000000000000000;
+        ip            = 0x0000000000000000;
+        flags         = 0x00;
+        _halt         = 0x00;
+      }
   };
 }
