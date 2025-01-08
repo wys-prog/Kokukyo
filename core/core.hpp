@@ -13,7 +13,7 @@ namespace kokuyo {
   class core {
   private:
     uint8_t              *memory_segment;
-    uint64_t              code_section;
+    uint64_t              segment_end;
     uint64_t              stack_beg;
     uint64_t              stack_max;
     uint64_t              ip;
@@ -34,7 +34,7 @@ namespace kokuyo {
 
   public:
     void run() {
-      while (!_halt) {
+      while (!_halt || ip < segment_end) { // Code outside the segment cannot be executed.
         uint8_t u = read_byte();
 
         if (u < INS_COUNT) {
@@ -43,9 +43,10 @@ namespace kokuyo {
           exceptions::illegal(ip, u);
         }
       }
-
-      delete[] memory_segment;
     }
 
+    core(uint8_t *mm_ptr, uint64_t s_end, uint64_t st_beg, uint64_t st_max) 
+      : memory_segment(mm_ptr), segment_end(s_end), stack_beg(st_beg), stack_max(st_max)
+      {}
   };
 }
