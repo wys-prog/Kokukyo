@@ -7,6 +7,7 @@
 #include "core.hpp"
 #include "set.h"
 #include "except.hpp"
+#include "stk.hpp"
 #include "uint128_t.h"
 
 namespace kokuyo {
@@ -52,58 +53,121 @@ namespace kokuyo {
     return d;
   }
 
+  void core::_cmp(uint64_t a, uint64_t b) {
+    if (a == b) flags     = 0x00;
+    else if (a < b) flags = 0x01;
+    else flags            = 0x10;
+  }
+
   void core::init_table() {
     ftable[nop] = [this]() { return; };
 
     ftable[mov] = [this]() {
       switch (read_byte()) {
-        case byte:  memory_segment[read_byte()]  = read_byte();  break;
-        case word:  memory_segment[read_word()]  = read_word();  break;
-        case dword: memory_segment[read_dword()] = read_dword(); break;
-        case qword: memory_segment[read_qword()] = read_qword(); break;
+        case byte:  memory_segment[read_byte()]  = memory_segment[read_byte()];  break;
+        case word:  memory_segment[read_word()]  = memory_segment[read_word()];  break;
+        case dword: memory_segment[read_dword()] = memory_segment[read_dword()]; break;
+        case qword: memory_segment[read_qword()] = memory_segment[read_qword()]; break;
         default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
       }
     };
 
     ftable[add] = [this]() {
       switch (read_byte()) {
-        case byte:  memory_segment[read_byte()]  += read_byte();  break;
-        case word:  memory_segment[read_word()]  += read_word();  break;
-        case dword: memory_segment[read_dword()] += read_dword(); break;
-        case qword: memory_segment[read_qword()] += read_qword(); break;
+        case byte:  memory_segment[read_byte()]  += memory_segment[read_byte()];  break;
+        case word:  memory_segment[read_word()]  += memory_segment[read_word()];  break;
+        case dword: memory_segment[read_dword()] += memory_segment[read_dword()]; break;
+        case qword: memory_segment[read_qword()] += memory_segment[read_qword()]; break;
         default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
       }
     };
     
     ftable[sub] = [this]() {
       switch (read_byte()) {
-        case byte:  memory_segment[read_byte()]  -= read_byte();  break;
-        case word:  memory_segment[read_word()]  -= read_word();  break;
-        case dword: memory_segment[read_dword()] -= read_dword(); break;
-        case qword: memory_segment[read_qword()] -= read_qword(); break;
+        case byte:  memory_segment[read_byte()]  -= memory_segment[read_byte()];  break;
+        case word:  memory_segment[read_word()]  -= memory_segment[read_word()];  break;
+        case dword: memory_segment[read_dword()] -= memory_segment[read_dword()]; break;
+        case qword: memory_segment[read_qword()] -= memory_segment[read_qword()]; break;
         default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
       }
     };
 
     ftable[mul] = [this]() {
       switch (read_byte()) {
-        case byte:  memory_segment[read_byte()]  *= read_byte();  break;
-        case word:  memory_segment[read_word()]  *= read_word();  break;
-        case dword: memory_segment[read_dword()] *= read_dword(); break;
-        case qword: memory_segment[read_qword()] *= read_qword(); break;
+        case byte:  memory_segment[read_byte()]  *= memory_segment[read_byte()];  break;
+        case word:  memory_segment[read_word()]  *= memory_segment[read_word()];  break;
+        case dword: memory_segment[read_dword()] *= memory_segment[read_dword()]; break;
+        case qword: memory_segment[read_qword()] *= memory_segment[read_qword()]; break;
         default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
       }
     };
     
     ftable[div] = [this]() {
       switch (read_byte()) {
-        case byte:  memory_segment[read_byte()]  -= read_byte();  break;
-        case word:  memory_segment[read_word()]  -= read_word();  break;
-        case dword: memory_segment[read_dword()] -= read_dword(); break;
-        case qword: memory_segment[read_qword()] -= read_qword(); break;
+        case byte:  memory_segment[read_byte()]  -= memory_segment[read_byte()];  break;
+        case word:  memory_segment[read_word()]  -= memory_segment[read_word()];  break;
+        case dword: memory_segment[read_dword()] -= memory_segment[read_dword()]; break;
+        case qword: memory_segment[read_qword()] -= memory_segment[read_qword()]; break;
         default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
       }
     };
 
+    ftable[jmp] = [this]() { ip = read_qword(); };
+
+    ftable[je] = [this]() {
+      uint64_t u64 = read_qword();
+      if (flags == 0x00) ip = u64;
+    };
+
+    ftable[jne] = [this]() {
+      uint64_t u64 = read_qword();
+      if (flags != 0x00) ip = u64;
+    };
+
+    ftable[jl] = [this]() {
+      uint64_t u64 = read_qword();
+      if (flags == 0x01) ip = u64;
+    };
+
+    ftable[jg] = [this]() {
+      uint64_t u64 = read_qword();
+      if (flags == 0x10) ip = u64;
+    };
+
+    ftable[jle] = [this]() {
+      uint64_t u64 = read_qword();
+      if (flags == 0x01 || flags == 0x00) ip = u64;
+    };
+
+    ftable[jge] = [this]() {
+      uint64_t u64 = read_qword();
+      if (flags == 0x10 || flags == 0x00) ip = u64;
+    };
+
+    ftable[cmp] = [this]() {
+      switch (read_byte()) {
+        case byte:  _cmp(read_byte(),  read_byte());  break;
+        case word:  _cmp(read_word(),  read_word());  break;
+        case dword: _cmp(read_dword(), read_dword()); break;
+        case qword: _cmp(read_qword(), read_qword()); break;
+        default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
+      }
+    };
+
+    ftable[lea] = [this]() {
+      memory_segment[read_qword()] = read_qword();
+    };
+
+    ftable[push] = [this]() {
+      uint8_t op = read_byte();
+
+      switch (read_byte()) {
+      case byte:  _push(read_byte());  break;
+      case word:  _push(read_word());  break;
+      case dword: _push(read_dword()); break;
+      case qword: _push(read_qword()); break;
+      default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
+      }
+    };
   }
 } // namespace kokuyo

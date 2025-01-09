@@ -29,9 +29,9 @@ namespace kokuyo {
 
     void                  _push(uint64_t bytes);
     uint64_t              _pop();
+    void                  _cmp(uint64_t a, uint64_t b);
 
     void                  init_table();
-    void                  init_undertable();
 
     std::function<void()> ftable[INS_COUNT];
     std::function<void()> undertable[9*4];
