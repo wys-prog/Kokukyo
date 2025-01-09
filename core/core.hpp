@@ -30,6 +30,7 @@ namespace kokuyo {
     void                  _push(uint64_t bytes);
     uint64_t              _pop();
     void                  _cmp(uint64_t a, uint64_t b);
+    void                  _mod();
 
     void                  init_table();
 

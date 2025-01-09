@@ -59,6 +59,15 @@ namespace kokuyo {
     else flags            = 0x10;
   }
 
+  void core::_mod() {
+    uint8_t op = read_byte();
+
+    if (op == byte) { uint8_t a = read_byte(), b = read_byte(); memory_segment[a] = a % b; }
+    else if (op == word) { uint16_t a = read_word(), b = read_word(); memory_segment[a] = a % b; }
+    else if (op == dword) { uint32_t a = read_dword(), b = read_dword(); memory_segment[a] = a % b; }
+    else if (op == qword) { uint64_t a = read_qword(), b = read_qword(); memory_segment[a] = a % b; }
+  }
+
   void core::init_table() {
     ftable[nop] = [this]() { return; };
 
@@ -162,12 +171,33 @@ namespace kokuyo {
       uint8_t op = read_byte();
 
       switch (read_byte()) {
-      case byte:  _push(read_byte());  break;
-      case word:  _push(read_word());  break;
-      case dword: _push(read_dword()); break;
-      case qword: _push(read_qword()); break;
-      default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
+        case byte:  _push(read_byte());  break;
+        case word:  _push(read_word());  break;
+        case dword: _push(read_dword()); break;
+        case qword: _push(read_qword()); break;
+        default: __throw_rt(exceptions::illegal(ip, memory_segment[ip])); break;
       }
     };
+
+    ftable[pop] = [this]() { memory_segment[read_qword()] = _pop(); };
+
+    ftable[syscall] = [this]() {
+      // todo
+    };
+
+    ftable[call] = [this]() {
+      _push(ip);
+      ip = read_qword();
+    };
+
+    ftable[ret] = [this]() {
+      ip = _pop();
+    };
+
+    ftable[mod] = [this]() {
+      _mod();
+    };
+
+    ftable[halt] = [this]() { _halt = true; };
   }
 } // namespace kokuyo
