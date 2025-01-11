@@ -34,7 +34,7 @@ namespace kokuyo {
 
     void run(std::istream &boot_file) {
       // create a new core.
-       core(&memory[0], 512, &memory[512], 512);
+      core(&memory[0], 512, &memory[512], 512);
 
       boot_file.read(memory, 512); // Read the boot sector's code.
       // Boot on the file.
