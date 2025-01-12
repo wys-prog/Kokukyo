@@ -16,27 +16,31 @@
 
 typedef char *cstr;
 
-namespace kokuyo {
-  template <unsigned long _mmlen, cstr _input, bool _bios, bool _libs>
-  class KoVMS {
-  private:
-    uint8_t memory[_mmlen];
-    // todo: support of BIOS
-    // todo: support of libs
+namespace wylma {
+  namespace kokuyo {
+    template <unsigned long _mmlen, cstr _input, bool _bios, bool _libs>
+    class KoVMS {
+    private:
+      uint8_t memory[_mmlen];
+      // todo: support of BIOS
+      // todo: support of libs
 
-  public:
+    public:
 
-    void boot() {
-      std::ifstream input(_input);
+      void boot() {
+        std::ifstream input(_input);
 
-      if (!input) throw std::runtime_error(_input + std::string(": Cannot open file."));
+        if (!input) throw std::runtime_error(_input + std::string(": Cannot open file."));
 
-      input.read(memory, 512);
+        input.read(memory, 512);
 
-      core c(&memory[0x00], _mmlen-1024, _mmlen-1024, _mmlen);
-      c.run();
-    }
+        core c(&memory[0x00], _mmlen-1024, _mmlen-1024, _mmlen);
+        c.run();
+      }
 
-  };
+    };
+
+  }
 
 }
+
