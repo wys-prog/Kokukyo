@@ -9,7 +9,10 @@
         "-g",
         "${file}",
         "-o",
-        "${fileDirname}/${fileBasenameNoExtension}"
+        "${fileDirname}/${fileBasenameNoExtension}",
+        "-static", 
+        "-std=c++20",
+        "-I${workspaceFolder}/"
       ],
       "options": {
         "cwd": "${fileDirname}"
