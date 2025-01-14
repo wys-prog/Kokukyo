@@ -7,23 +7,24 @@
 
 #define     nop         0x00
 
-#define     movb        0X01
+#define     movb        0x01
 #define     addb        0x02
 #define     subb        0x03
 #define     mulb        0x04
-#define     modb        0x05
+#define     divb        0x05
+#define     modb        0x06
 
-#define     movw        0x06
-#define     addw        0x07
-#define     subw        0x08
-#define     mulw        0x09
-#define     divw        0x0A
-#define     modw        0x0B
+#define     movw        0x07
+#define     addw        0x08
+#define     subw        0x09
+#define     mulw        0x0A
+#define     divw        0x0B
+#define     modw        0x0C
 
-#define     movd        0x0C
-#define     addd        0x0D
-#define     subd        0x0E
-#define     muld        0x0F
+#define     movd        0x0D
+#define     addd        0x0E
+#define     subd        0x0F
+#define     muld        0x10
 #define     divd        0x11
 #define     modd        0x12
 

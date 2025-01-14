@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include <stack>
 #include <cstdint>
 #include <stdfloat>
 #include <functional>
 #include <unordered_map>
 
+#include "src/set.h"
 #include "libs/array.hpp"
 
 namespace wylma {
@@ -39,18 +41,87 @@ namespace wylma {
     template <uint64_t memory_len>
     class core {
     private:
-      array<uint8_t, memory_len> &memory; // Get a reference to the memory.
+      array<uint8_t, memory_len> &_memory; // Get a reference to the memory.
       uint64_t  _ip;
+      uint64_t  _stackbeg;
+      uint64_t  _stackend;
       bool      _halt = false;
-      std::unordered_map<uint8_t, std::function<void()>> ftable;
+      uint8_t   _flags;
 
-      uint8_t           read_8();   // The virtual machine reads only 8 bits.
-      uint16_t          read_16();  // To read more bits, you need make a 
-      uint32_t          read_32();  // cast, from an array, to an intiger.
-      uint64_t          read_64();
-      std::float128_t   read_128(); // The standard 128. Use it only for floats. 
-                                    // Manipulation of 128 intigers will maybe 
-                                    // come in another arch, or on another version.
+      std::unordered_map<uint8_t, std::function<void()>> ftable = {
+        {halt, [this]() {_halt = true;}},
+
+        {movb, [this]() {_memory[read_8()] = read_8();}},
+        {addb, [this]() {_memory[read_8()] += read_8();}},
+        {subb, [this]() {_memory[read_8()] -= read_8();}},
+        {mulb, [this]() {_memory[read_8()] *= read_8();}},
+        {divb, [this]() {_memory[read_8()] /= read_8();}},
+
+        {movw, [this]() {_memory[read_16()] = read_16();}},
+        {addw, [this]() {_memory[read_16()] += read_16();}},
+        {subw, [this]() {_memory[read_16()] -= read_16();}},
+        {mulw, [this]() {_memory[read_16()] *= read_16();}},
+        {divw, [this]() {_memory[read_16()] /= read_16();}},
+
+        {movd, [this]() {_memory[read_32()] = read_32();}},
+        {addd, [this]() {_memory[read_32()] += read_32();}},
+        {subd, [this]() {_memory[read_32()] -= read_32();}},
+        {muld, [this]() {_memory[read_32()] *= read_32();}},
+        {divd, [this]() {_memory[read_32()] /= read_32();}},
+
+        {movq, [this]() {_memory[read_64()] = read_64();}},
+        {addq, [this]() {_memory[read_64()] += read_64();}},
+        {subq, [this]() {_memory[read_64()] -= read_64();}},
+        {mulq, [this]() {_memory[read_64()] *= read_64();}},
+        {divq, [this]() {_memory[read_64()] /= read_64();}},
+
+        {jmp, [this]() {_ip = read_64();}},
+        {je,  [this]() { auto next = read_64();  _ip = (_flags == 0x00 ? next : _ip); }}
+        {jne, [this]() { auto next = read_64();  _ip = (_flags == 0x00 ? _ip : next); }}
+        {jl,  [this]() { auto next = read_64();  _ip = (_flags == 0x01 ? next : _ip); }}
+        {jg,  [this]() { auto next = read_64();  _ip = (_flags == 0x10 ? next : _ip); }}
+        {jle, [this]() { auto next = read_64();  _ip = (_flags == 0x01 ? next : _ip); auto next = read_64(); _ip = (_flags == 0x00 ? next : _ip); }}
+        {jlg, [this]() { auto next = read_64();  _ip = (_flags == 0x10 ? next : _ip); auto next = read_64(); _ip = (_flags == 0x00 ? next : _ip); }}
+
+        {call, [this]() {}}
+      };
+
+      uint8_t read_8() {
+        return _memory[ip++];
+      } 
+
+      uint16_t read_16() {
+        cast_core::_8_to_16 _16;
+        _16.u8[0] = _memory[ip++];
+        _16.u8[1] = _memory[ip++];
+      }
+
+      uint32_t read_32() {
+        cast_core::_8_to_32 _32;
+        for (int i = 0; i < 4; i++) {
+          _32.u8[i] = _memory[ip++];
+        }
+        return _32.u32;
+      }
+
+      uint64_t read_64() {
+        cast_core::_8_to_64 _64;
+        for (int i = 0; i < 8; i++) {
+          _64.u8[i] = _memory[ip++];
+        }
+        return _64.u64;
+      }
+
+      std::float128_t read_128() {
+        cast_core::_8_to_f128 _128;
+        for (int i = 0; i < 16; i++) {
+          _128.u8[i] = _memory[ip++];
+        }
+
+        return _128.f128;
+      }
+
+      void pushb(uint8_t b) {}
 
     public:
       void invoke(uint64_t _at = 0) {
@@ -68,7 +139,7 @@ namespace wylma {
         }
       }
 
-      core(array<uint8_t, memory_len> &_array) : memory(_array) {}
+      core(array<uint8_t, memory_len> &_array, uint64_t _stak_beg, uint64_t _stack_end) : _memory(_array), _stackbeg(_stakbeg), _stackend(_stack_end) {}
     };
   
   } // namespace kokuyo
