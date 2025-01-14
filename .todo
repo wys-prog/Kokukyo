@@ -1,0 +1,7 @@
+[ ] Finish the « core » class. Add instructions.
+[ ] Code KoVM-ST version (Single Threaded)
+[ ] Code KoVM (Kokuyo Virtual Machine)
+[ ] Code KoC  (Kokuyo C language.)
+[ ] Add external functions support
+[ ] Code a C interface
+ 
