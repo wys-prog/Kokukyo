@@ -45,6 +45,7 @@ namespace wylma {
       uint64_t  _ip;
       uint64_t  _stackbeg;
       uint64_t  _stackend;
+      uint64_t  _stackpos;
       bool      _halt = false;
       uint8_t   _flags;
 
@@ -77,7 +78,7 @@ namespace wylma {
 
         {jmp, [this]() {_ip = read_64();}},
         {je,  [this]() { auto next = read_64();  _ip = (_flags == 0x00 ? next : _ip); }}
-        {jne, [this]() { auto next = read_64();  _ip = (_flags == 0x00 ? _ip : next); }}
+        {jne, [this]() { auto next = read_64();  _ip = (_flags == 0x00 ? _ip  : next);}}
         {jl,  [this]() { auto next = read_64();  _ip = (_flags == 0x01 ? next : _ip); }}
         {jg,  [this]() { auto next = read_64();  _ip = (_flags == 0x10 ? next : _ip); }}
         {jle, [this]() { auto next = read_64();  _ip = (_flags == 0x01 ? next : _ip); auto next = read_64(); _ip = (_flags == 0x00 ? next : _ip); }}
@@ -121,7 +122,68 @@ namespace wylma {
         return _128.f128;
       }
 
-      void pushb(uint8_t b) {}
+      void _pushb(uint8_t b) {
+        if (_stackbeg + _stackpos < _stackmax) {
+          _memory[_stackbeg + _stackpos] = b;
+          _stackpos++;
+        }
+      }
+
+      void _pushw(uint16_t w) {
+        cast_core::_8_to_16 _16;
+        _16.u16 = w;
+        _pushb(_16.u8[0]);
+        _pushb(_16.u8[1]);
+      }
+
+      void _pushd(uint32_t d) {
+        cast_core::_8_to_32 _32;
+        _32.u32 = d;
+
+        for (char i = 0; i < 4; i++) {
+          _pushb(_32.u8[i]);
+        }
+      }
+
+      void _pushq(uint64_t q) {
+        cast_core::_8_to_64 _64;
+        _64.u64 = q;
+
+        for (char i = 0; i < 8; i++) {
+          _pushb(_64.u8[i]);
+        }
+      }
+    
+      uint8_t _popb() {
+        _stackpos--;
+        return _memory[_stackbeg + _stackpos + 1];
+      }
+
+      uint16_t _popw() {
+        cast_core::_8_to_16 _16;
+        _16.u8[0] = _popb();
+        _16.u8[1] = _popb();
+
+        return _16.u16;
+      }
+
+      uint32_t _popd() {
+        cast_core::_8_to_32 _32;
+
+        for (char i = 0; i < 4; i++) 
+          _32.u8[i] = _popb();
+        
+        return _32.u32;
+      }
+
+      uint64_t _popq() {
+        cast_core::_8_to_64 _64;
+
+        for (char i = 0; i < 8; i++) 
+          _64.u8[i] = _popb();
+        
+        return _64.u64;
+      }
 
     public:
       void invoke(uint64_t _at = 0) {
