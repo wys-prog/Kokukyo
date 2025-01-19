@@ -87,6 +87,10 @@
 
 #define     lea         0x41
 
+#define     xors        0x42
+#define     ors         0x43
+#define     ands        0x44
+
 #define     halt        0xFF
 
 #endif // SET_H

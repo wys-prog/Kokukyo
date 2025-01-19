@@ -1,3 +1,4 @@
+-- global
 [ ] Finish the « core » class. Add instructions.
 [ ] Code KoVM-ST version (Single Threaded)
 [ ] Code KoVM (Kokuyo Virtual Machine)
@@ -5,3 +6,10 @@
 [ ] Add external functions support
 [ ] Code a C interface
 [ ] Code an external interface ?
+
+-- core.hpp
+[ ] SIMD-128 instructions
+[ ] Syscalls
+[ ] OR
+[ ] XOR
+[ ] AND

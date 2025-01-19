@@ -11,7 +11,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include "src/set.h"
+#include "set.h"
 #include "libs/array.hpp"
 
 namespace wylma {
@@ -22,7 +22,7 @@ namespace wylma {
         uint8_t  u8[2]; // or cast arrays to bits.
       };                // the _f128 cast is standard.
                         // But it's deprecated, except
-      union _8_to_32 {  // You will use it for floating 
+      union _8_to_32 {  // you will use it for floating 
         uint32_t u32;   // point operations.
         uint8_t  u8[4];
       };
@@ -50,6 +50,7 @@ namespace wylma {
       uint8_t   _flags;
 
       std::unordered_map<uint8_t, std::function<void()>> ftable = {
+        {nop, [this]() {}},
         {halt, [this]() {_halt = true;}},
 
         {movb, [this]() {_memory[read_8()] = read_8();}},
@@ -81,10 +82,33 @@ namespace wylma {
         {jne, [this]() { auto next = read_64();  _ip = (_flags == 0x00 ? _ip  : next);}}
         {jl,  [this]() { auto next = read_64();  _ip = (_flags == 0x01 ? next : _ip); }}
         {jg,  [this]() { auto next = read_64();  _ip = (_flags == 0x10 ? next : _ip); }}
-        {jle, [this]() { auto next = read_64();  _ip = (_flags == 0x01 ? next : _ip); auto next = read_64(); _ip = (_flags == 0x00 ? next : _ip); }}
-        {jlg, [this]() { auto next = read_64();  _ip = (_flags == 0x10 ? next : _ip); auto next = read_64(); _ip = (_flags == 0x00 ? next : _ip); }}
+        {jle, [this]() { auto next = read_64();  _ip = (_flags == 0x01 ? next : _ip); _ip = (_flags == 0x00 ? next : _ip); }}
+        {jlg, [this]() { auto next = read_64();  _ip = (_flags == 0x10 ? next : _ip); _ip = (_flags == 0x00 ? next : _ip); }}
 
-        {call, [this]() {}}
+        {call, [this]() {_pushq(_ip); _ip = read_64(); }}
+        {ret, [this]() {_ip = _popq();}}
+
+        {cmpb, [this]() {cmp(read_8(), read_8());}},
+        {cmpw, [this]() {cmp(read_16(), read_16());}},
+        {cmpd, [this]() {cmp(read_32(), read_32());}},
+        {cmpq, [this]() {cmp(read_64(), read_64());}},
+
+        {pushb, [this]() {_pushb(read_8());}},
+        {pushw, [this]() {_pushb(read_16());}},
+        {pushd, [this]() {_pushb(read_32());}},
+        {pushq, [this]() {_pushb(read_64());}},
+
+        {popb, [this]() {_memory[read_64()] = _popb();}},
+        {popw, [this]() {for (char i = 0; i < 2; ++i) _memory[read_64()+1] = _popb();}},
+        {popd, [this]() {for (char i = 0; i < 4; ++i) _memory[read_64()+1] = _popb();}},
+        {popq, [this]() {for (char i = 0; i < 8; ++i) _memory[read_64()+1] = _popb();}},
+
+        {modb, [this]() {auto i = read_8(); _memory[i] = _memory[i] % read_8();}},
+        {modw, [this]() {_modw();}},
+        {modd, [this]() {_modd();}},
+        {modq, [this]() {_modq();}},
+
+        {lea, [this]() {_memory[read_64()] = _memory[read_64()];}},
       };
 
       uint8_t read_8() {
@@ -155,8 +179,12 @@ namespace wylma {
       }
     
       uint8_t _popb() {
-        _stackpos--;
-        return _memory[_stackbeg + _stackpos + 1];
+        if (_stackpos-1) {
+          _stackpos--;
+          return _memory[_stackbeg + _stackpos + 1];
+        }
+
+        return 0x00;
       }
 
       uint16_t _popw() {
@@ -183,6 +211,33 @@ namespace wylma {
           _64.u8[i] = _popb();
         
         return _64.u64;
+      }
+
+      void cmp(uint64_t a, uint64_t b) {
+        if      (a == b) flags = 0x00;
+        else if (a < b)  flags = 0x01;
+        else             flags = 0x10; 
+      }
+
+      void _modw() {
+        cast_core::_8_to_16 a, b;
+        a.u16 = read_16();
+        b.u16 = read_16();
+        _memory[a.u16] = a.u16 % b.u16;
+      }
+
+      void _modd() {
+        cast_core::_8_to_32 a, b;
+        a.u32 = read_32();
+        b.u32 = read_32();
+        _memory[a.u32] = a.u32 % b.u32;
+      }
+
+      void _modq() {
+        cast_core::_8_to_64 a, b;
+        a.u64 = read_64();
+        b.u64 = read_64();
+        _memory[a.u64] = a.u64 % b.u64;
       }
 
     public:
